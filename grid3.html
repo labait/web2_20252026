@@ -41,6 +41,7 @@
   </main>
 
   <script>
+    // Dynamically create images
     Array(30).fill(0).forEach((_, id) => {
       const gallery = document.querySelector('#gallery');
       const div = document.createElement('div');
@@ -52,10 +53,10 @@
       gallery.appendChild(div);
     });
 
+    // Zoom functionality
     let zoomed = false;
     const setup = () => {
       const gallery = document.querySelector('#gallery'); 
-      
       document.querySelectorAll('#gallery > div').forEach(function(img) {
         const boxGallery = gallery.getBoundingClientRect();
         const boxImg = img.getBoundingClientRect()
