@@ -6,59 +6,95 @@
   <title>grid</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+
 </head>
 <body>
-  <main class="container max-w-6xl mx-auto p-4">
-    <section id="video" class="h-screen items-center justify-center hidden md:flex">
-      <div class="text-[8vw] font-bold">video</div>
-    </section>
-    <section class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+  <main class="container  mx-auto p-4 ">
+    <section id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=1" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a={id}" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+      </div>
+      <!-- <div class="overflow-hidden w-100">
+        <img src="https://picsum.photos/1600/1200/?a=2" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=2" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a=3" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=3" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a=4" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=4" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a=5" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=5" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a=7" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=7" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+        <img src="https://picsum.photos/1600/1200/?a=8" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
       </div>
       <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=8" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/800/600/?a=9" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
+        <img src="https://picsum.photos/1600/1200/?a=9" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+      </div> -->
     </section>
   </main>
 
   <script>
-    document.querySelectorAll('img').forEach(img => {
-      img.addEventListener('click', () => {
-          const tl = gsap.timeline({paused: true});
-          tl.to(img.parentElement,{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            xPercent: -50,
-            yPercent: -50,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            zIndex: 1000,
-            ease: "power2.out"
-          });
-          tl.play();
-          console.log('Image clicked!');
-      });
+    Array(30).fill(0).forEach((_, id) => {
+      const gallery = document.querySelector('#gallery');
+      const div = document.createElement('div');
+      div.classList.add('overflow-hidden', 'w-100');
+      const img = document.createElement('img');
+      img.src = `https://picsum.photos/1600/1200/?a=${id}`;
+      img.classList.add('cursor-pointer', 'w-full', 'grayscale', 'hover:grayscale-0', 'hover:scale-[1.2]',  'transition-transform', 'duration-300');
+      div.appendChild(img);
+      gallery.appendChild(div);
     });
+
+    let zoomed = false;
+    const setup = () => {
+      const gallery = document.querySelector('#gallery'); 
+      
+      document.querySelectorAll('#gallery > div').forEach(function(img) {
+        const boxGallery = gallery.getBoundingClientRect();
+        const boxImg = img.getBoundingClientRect()
+        const galleryWidth = boxGallery.width / window.innerWidth ;
+        const zoomTimeline = gsap.timeline(
+          {
+            paused: true,
+            onComplete: () => {
+              zoomed = true
+              console.log('zoom complete');
+            }, 
+            onReverseComplete: () => {
+              zoomed = false;
+              console.log('zoom reversed complete');
+            }
+          }
+        );
+        //gallery.style.transformOrigin = `${boxImg.left - boxGallery.left}px ${boxImg.top - boxGallery.top}px`
+        zoomTimeline.to(gallery, {
+          x: -(boxImg.left),
+          y: -(boxImg.top + boxGallery.top),
+          scale: window.innerWidth / boxImg.width,
+          zIndex: 1000,
+          duration: 0.4,
+          //scrollTo: {y:0},
+          transformOrigin: `${boxImg.left - boxGallery.left}px ${boxImg.top - boxGallery.top}px`,
+          ease: "elastic.out(1, 2)",
+        })
+        img.addEventListener('click', () => {
+          console.log("zoomed?", zoomed)
+          if(zoomed) {
+            zoomTimeline.reverse();
+          } else {
+            zoomTimeline.play();
+          }
+        });
+      });
+    }
+    window.addEventListener('load', setup);
   </script>
 </body>
 </html>

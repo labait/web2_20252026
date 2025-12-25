@@ -1,137 +1,107 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Scroll Animation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3d2</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <script type="importmap">
     {
-        "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-        }
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
     }
-    </script>
-    
-    <style>
-        body {
-            margin: 0;
-            overflow-x: hidden;
-        }
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 10;
-        }
-    </style>
+  </script>
 </head>
 <body>
-    <!-- Section 1 -->
-    <section id="section1" class="h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-        <div class="text-center text-white">
-            <h1 class="text-6xl font-bold mb-4">Sezione 1</h1>
-            <p class="text-2xl">Scrolla verso il basso</p>
-        </div>
-    </section>
+  <main class="container mx-auto h-screen flex items-center justify-center ">
+    <div id="canvas-container" class="border"></div>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    <!-- Section 2 - Con l'oggetto 3D -->
-    <section id="section2" class="h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 relative">
-        <div class="text-center text-white z-20 relative">
-            <h1 class="text-6xl font-bold mb-4">Sezione 2</h1>
-            <p class="text-2xl">L'oggetto 3D si muove da sinistra a destra</p>
-        </div>
-    </section>
+    // Setup Scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.4, 1000);
+    camera.position.z = 5;
 
-    <!-- Section 3 -->
-    <section id="section3" class="h-screen flex items-center justify-center bg-gradient-to-br from-pink-500 to-red-600">
-        <div class="text-center text-white">
-            <h1 class="text-6xl font-bold mb-4">Sezione 3</h1>
-            <p class="text-2xl">Fine dell'animazione</p>
-        </div>
-    </section>
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const container = document.getElementById('canvas-container');
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
+    renderer.setSize(width, height);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
+    
+    // Aggiorna aspect ratio della camera
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
 
-    <!-- Canvas Container -->
-    <div id="canvas-container"></div>
+    const loader = new OBJLoader();
+    const object = await loader.loadAsync('models/teapot.obj');
+    console.log('Oggetto caricato:', object);
+    
+    
+    // Calcola il bounding box per centrare e scalare l'oggetto
+    const box = new THREE.Box3().setFromObject(object);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    
+    // Centra l'oggetto
+    object.position.x = -center.x;
+    object.position.y = -center.y;
+    object.position.z = -center.z;
+    
+    // Scala l'oggetto per renderlo visibile (adatta alla dimensione della scena)
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 100 / maxDim; // Scala per avere un oggetto di circa 3 unità
+    object.scale.set(scale, scale, scale);
+    
+    scene.add(object);
+    
+    // Posiziona la camera per vedere l'oggetto centrato
+    const distance = maxDim * scale * 2; // Distanza basata sulla dimensione dell'oggetto
+    camera.position.set(0, 0, distance);
+    camera.lookAt(0, 0, 0);
 
-    <!-- GSAP e ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    // Luci
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
 
-    <!-- Three.js Scene -->
-    <script type="module">
-        import * as THREE from 'three';
+    // OrbitControls per rotazione con il mouse
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0, 0); // L'origine di rotazione è al centro dell'oggetto
+    controls.enableDamping = true; // Aggiunge un effetto di inerzia per un movimento più fluido
+    controls.dampingFactor = 0.05;
+    controls.update();
 
-        // Setup Scene
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.4, 1000);
-        camera.position.z = 5;
+    // Animazione
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update(); // Aggiorna i controlli (necessario se enableDamping è true)
+        renderer.render(scene, camera);
+    }
+    animate();
+    
+    // Gestione resize
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('canvas-container');
+        const width = container.clientWidth || window.innerWidth;
+        const height = container.clientHeight || window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+        console.log(width, height);
+    });
 
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0);
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // Crea un oggetto 3D (cubo con materiale colorato)
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshStandardMaterial({
-            color: 0xcccccc,
-            metalness: 0.5,
-            roughness: 0.2,
-            transparent: true,
-            opacity: 0.9
-        });
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-
-        // Luci
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 5, 5);
-        scene.add(directionalLight);
-
-        // Posizione iniziale (fuori dallo schermo a sinistra)
-        cube.position.x = -10;
-        cube.position.y = 0;
-
-        // Animazione di rotazione continua
-        function animate() {
-            requestAnimationFrame(animate);
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // GSAP ScrollTrigger Animation
-        gsap.registerPlugin(ScrollTrigger);
-
-        gsap.to(cube.position, {
-            x: 10, // Muove da -10 (sinistra) a 10 (destra)
-            ease: "none",
-            scrollTrigger: {
-                trigger: "#section2",
-                start: "top top",
-                end: "bottom top",
-                scrub: 1,
-                pin: true,
-                markers: true // Imposta a true per vedere i marker di debug
-            }
-        });
-
-        // Gestione resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+  </script>
 </body>
 </html>
-

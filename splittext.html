@@ -13,18 +13,13 @@
 </head>
 <body>
   <section id="section1" class="flex items-center justify-center h-screen">
-      <div class="title text-3xl font-bold underline text-center">
-        <div>La miglior vendetta? La felicità. </div>
-        <div>Non c'è niente che faccia più impazzire </div>
-        <div>la gente che vederti felice.</div>
+      <div class="title text-[4vw] font-bold text-center mx-[10vw]">
+        La miglior vendetta? La felicità.<br/>
+        Non c'è niente che faccia più impazzire 
+        la gente che vederti felice.
       </div>
     </section>
-    <section id="section2" class="h-screen bg-gray-200 flex items-center justify-center">
-      <div class="title text-[4vw]">
-        Scroll down to see the animation again.
-      </div>
-    </section>
-    <section id="section3" class="h-screen bg-gray-400 flex items-center justify-center">
+    <section id="section2" class="h-screen bg-gray-400 flex items-center justify-center">
       <div class="title text-3xl font-bold ">
         The End.
       </div>
@@ -35,13 +30,15 @@
 
     const split1 = new SplitText("#section1 .title", {type: "lines, words, chars"});
 
-    gsap.from(split1.chars, {
+    gsap.from(split1.words, {
       scrollTrigger: {
-        trigger: "section1",
-        start: "top center",
-        end: "bottom top",
-        toggleActions: "play none none reset",
-        markers: true
+        trigger: "#section1",
+        // start: "top center",
+        // end: "bottom top",
+        // toggleActions: "play none none reset",
+        markers: true,
+        scrub: true,
+        pin: true,
       },
       duration: 1,
       y: 100,
