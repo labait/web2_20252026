@@ -15,31 +15,18 @@
     <div class="spinner border-4 border-gray-300 border-t-4 border-t-blue-500 rounded-full w-12 h-12 animate-spin"></div>
   </div>
   <main class="container  mx-auto p-4 ">
-    <section id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a={id}" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
+    <a href="#" id="close-button" class="hidden fixed hover:scale-[1.2] transition-transform duration-200 top-4 right-4 mix-blend-difference text-gray-600 hover:text-white z-50">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="size-20">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
+    </a>
+    <section id="gallery" class="group grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="overflow-hidden w-100  [&:not(.current)]:cursor-pointer [&:not(.current)]:grayscale group-[&:not(.zoomed)]:hover:grayscale-0 transition-transform duration-200">
+        <img 
+          data-src="https://picsum.photos/id/:id/1600/1200" 
+          src="" class=" w-full group-[&:not(.zoomed)]:hover:scale-[1.2] transition-transform duration-200 ease-in-out" 
+          alt="">
       </div>
-      <!-- <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=2" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=3" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=4" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=5" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=7" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=8" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div>
-      <div class="overflow-hidden w-100">
-        <img src="https://picsum.photos/1600/1200/?a=9" class="cursor-pointer w-full grayscale hover:grayscale-0 hover:scale-[1.2] transition-transform duration-300" alt="">
-      </div> -->
     </section>
   </main>
 
@@ -47,50 +34,65 @@
     const loading = document.querySelector('.loading');
     loading.classList.remove('hidden');
 
+    let currentItem = null;
+    const closeButton = document.querySelector('#close-button');
+    closeButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      currentItem.zoomTimeline.reverse();
+    });
+
     // Dynamically create images
     Array(30).fill(0).forEach((_, id) => {
       const gallery = document.querySelector('#gallery');
-      const div = document.createElement('div');
-      div.classList.add('overflow-hidden', 'w-100');
-      const img = document.createElement('img');
-      img.src = `https://picsum.photos/id/${30+id}/1600/1200`;
-      img.classList.add('cursor-pointer', 'w-full', 'grayscale', 'hover:grayscale-0', 'hover:scale-[1.2]',  'transition-transform', 'duration-300');
-      div.appendChild(img);
-      gallery.appendChild(div);
+      let div = gallery.querySelectorAll('div')[0];
+      let img = div.querySelector('img');
+      if(id > 0) {
+        div = div.cloneNode(true);
+        img = div.querySelector('img');
+      }
+      img.src = img.dataset.src.replace(':id', 20+(id + 1));
+      div.classList.add(
+        //'hover:shadow-black/30',
+        //'hover:z-20',
+        //'hover:shadow-lg',  
+        //`[&:not(.current):hover]:rotate-${Math.floor(Math.random() * 20) - 10}` // Add slight rotation for variety
+      ); 
+      if(id > 0) gallery.appendChild(div);
     });
 
     // Zoom functionality
-    let zoomed = false;
     const setup = () => {
       window.scrollTo(0,0);
       loading.classList.remove('hidden');
       
       const gallery = document.querySelector('#gallery'); 
-      document.querySelectorAll('#gallery > div').forEach(function(img) {
+      document.querySelectorAll('#gallery > div').forEach(function(div) {
         const boxGallery = gallery.getBoundingClientRect();
-        const boxImg = img.getBoundingClientRect()
+        const boxImg = div.getBoundingClientRect()
         const galleryWidth = boxGallery.width / window.innerWidth ;
         const zoomTimeline = gsap.timeline(
           {
             paused: true,
+            onStart: () => {
+              currentItem = div;
+              div.classList.add('current');
+              div.parentElement.classList.add('zoomed');
+              closeButton.classList.remove('hidden');
+            },
             onComplete: () => {
-              zoomed = true
               console.log('zoom complete');
             }, 
             onReverseComplete: () => {
-              zoomed = false;
+              div.parentElement.classList.remove('zoomed');
+              closeButton.classList.add('hidden');
+              div.classList.remove('current');
               console.log('zoom reversed complete');
             }
           }
         );
-        //gallery.style.transformOrigin = `${boxImg.left - boxGallery.left}px ${boxImg.top - boxGallery.top}px`
         zoomTimeline.to(gallery, {
-          x: () => {
-            return  -(boxImg.left);
-          },
-          y: () => {
-            return -(boxImg.top + boxGallery.top) + window.scrollY;
-          },
+          x: () => -(boxImg.left),
+          y: () => -(boxImg.top + boxGallery.top) + window.scrollY,
           scale: window.innerWidth / boxImg.width,
           zIndex: 1000,
           duration: 0.4,
@@ -98,9 +100,9 @@
           transformOrigin: `${boxImg.left - boxGallery.left}px ${boxImg.top - boxGallery.top}px`,
           ease: "elastic.out(1, 2)",
         })
-        img.addEventListener('click', () => {
-          console.log("zoomed?", zoomed)
-          if(zoomed) {
+        div.zoomTimeline = zoomTimeline;
+        div.addEventListener('click', () => {
+          if (div.parentElement.classList.contains('zoomed')) {
             zoomTimeline.reverse();
           } else {
             zoomTimeline.play();
