@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grid</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="container mx-auto border-4 border-blue-500 ">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=1" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=2" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=3" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=4" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=5" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+      <div class="item rounded overflow-hidden">
+        <img src="https://picsum.photos/800/600?p=6" alt="image" class="cursor-pointer grayscale hover:grayscale-0 transition-all duration-500">
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.from('.item', 
+      {
+        opacity: 0, 
+        y: 100,
+        stagger: 0.05,
+      }, 
+    );
+  </script>
+</body>
+</html>

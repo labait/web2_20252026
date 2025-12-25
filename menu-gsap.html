@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>menu</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hamburgers/1.1.3/hamburgers.min.css" />
+
+  <style>
+    #menu {
+      top: -100vh;
+      transition: all 0.3s ease-in-out;
+      ul {
+        li {  
+          a {
+            color: #4c1d95; /* Tailwind's violet-900 */
+            text-decoration: none;
+          }
+        }
+      }
+    }
+
+    #menu.open {
+      top: 0;
+    }
+
+    /* when hamburger is not active */
+    .hamburger-inner, .hamburger-inner:after, .hamburger-inner:before {
+      background-color: #4c1d95; /* Tailwind's violet-900 */
+    }
+    
+    /* when hamburger is active */
+    .hamburger.is-active 
+    .hamburger-inner, 
+    .hamburger.is-active .hamburger-inner:after, 
+    .hamburger.is-active .hamburger-inner:before {
+      background-color: white;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- menu toggle -->
+  <button class="
+    hamburger 
+    hamburger--collapse 
+    absolute 
+    top-4 sm:top-8 md:top-12 
+    right-4 sm:right-8 md:right-12 
+    z-10 
+    sm:scale-[1.5]
+    md:scale-[2]" 
+    type="button">
+    <span class="hamburger-box">
+      <span class="hamburger-inner"></span>
+    </span>
+  </button> 
+  
+  <!-- menu -->
+  <div id="menu" class="z-1 absolute w-screen h-screen bg-violet-300 flex items-center justify-center">
+    <ul>
+      <li class="text-[12vw] font-bold -m-10"><a href="#">Home</a></li>
+      <li class="text-[12vw] font-bold -m-10"><a href="#">About</a></li>
+      <li class="text-[12vw] font-bold -m-10"><a href="#">Services</a></li>
+      <li class="text-[12vw] font-bold -m-10"><a href="#">Contact</a></li>
+    </ul>
+  </div>
+
+  <main class="container mx-auto flex justify-center h-screen items-center ">
+    <div id="title" class="text-violet-900 font-bold whitespace-nowrap w-auto text-[10vw]">
+      Hello World!
+    </div>
+  </main>
+
+  <script>
+    const hamburger = document.querySelector("button.hamburger");
+    const menu = document.getElementById("menu");
+    
+    const tlMenu = gsap.timeline({paused: true});
+    tlMenu.to("#menu", {duration: 0.2, top: 0, ease: "power2.out"});
+    tlMenu.from(
+      "#menu ul li", 
+      {
+        duration: 0.2, 
+        y: 50, 
+        rotation: () => Math.random() * 20 - 10,
+        opacity: 0, 
+        stagger: 0.1, 
+        ease: "elastic.out(2, 2)",
+        delay: 0.5
+      }, 
+      
+    );
+  
+    hamburger.addEventListener("click", () => {
+      console.log("toggle menu");
+      hamburger.classList.toggle("is-active");
+      // if (tlMenu.isActive()) return; // prevent toggling while animation is in progress
+      if (menu.classList.contains("open")) {
+        tlMenu.reverse();
+        menu.classList.remove("open");
+      } else {
+        tlMenu.play();
+        menu.classList.add("open");
+      }
+    });
+  </script>
+</body>
+</html>

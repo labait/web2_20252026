@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <style>
+    section .text {
+      font-size: 10vw;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="section1" class="flex items-center justify-center h-screen border border-black">
+    <div class="text">section1</div>
+  </section>
+  <section id="section2" class="flex items-center justify-center h-screen border border-black">
+    <div class="text font-bold">section2</div>
+  </section>
+  <section id="section3" class="flex items-center justify-center h-screen border border-black">
+    <div class="text">section3</div>
+  </section>
+
+  <script>
+    //gsap.from("#section1 .text", {x: -800, duration: 1});
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.from("#section2 .text", {
+      x: -800,
+      // scale: 0.5,
+      duration: 1,
+      scrollTrigger: {
+        trigger: "#section2",
+        // start: "top center",
+        // end: "bottom center",
+        toggleActions: "play none none none",
+        scrub: true,
+        // ease: "bounce.out",
+        markers: true,
+        pin: true,
+      }
+    });
+  </script>
+</body>
+
+</html>
