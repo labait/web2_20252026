@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-
+  
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -17,8 +17,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
 
-
-  <link rel="stylesheet" href="hamburgers.min.css">
   <style>
     section .title{
       font-size: 10vw;
@@ -28,39 +26,12 @@
       font-size: 5vw;
     }
 
-    #hero {
-      background-color: #8029FF;
-    }
-
-    #menu { 
-      transition: all 0.3s;
-      left: 100%;
-    }
-
-    #menu.open {
-      left: 0;
-    }
   </style>
 </head>
 <body>
-  <button id="buttonMenu" class="hamburger hamburger--spring fixed right-0 cursor-pointer z-10 scale-150 right-8 top-8" type="button">
-    <span class="hamburger-box">
-      <span class="hamburger-inner"></span>
-    </span>
-  </button>  
-  <div id="menu" class="h-screen w-screen fixed bg-violet-400"></div>
   <main>
-    <section section id="hero" class="hidden h-screen flex items-center justify-center border-solid border-2 border-black">
-      <div id="lottie-animation" class="h-screen"></div>
-      <script>
-        var animation = lottie.loadAnimation({
-          container: document.getElementById('lottie-animation'), // è il div dove voglio mettere l'animazionee getelementById vuol dire prendi l'elemento con questo id
-          renderer: 'svg',
-          path: './animation1.json', // è il percorso del file json dell'animazione
-          loop: true,
-          autoplay: true,
-        });
-      </script>
+    <section section class="h-screen flex items-center justify-center border-solid border-2 border-black">
+      <h1 id="phrase1" class="font-bold text-center text-[4vw] leading-snug px-20"></h1>
     </section>
     <section id="section1" class="h-screen flex items-center justify-center border-solid border-2 border-black">
       <div class="title  font-bold text-center leading-snug p-10">
@@ -80,19 +51,19 @@
       </div>
     </section>
   </main>
-    
-  <script src="scripts.js"></script> 
-  <script>
-    const buttonMenu = document.getElementById('buttonMenu');
-    const menu = document.getElementById('menu');
 
-    buttonMenu.addEventListener('click', () => {
-      console.log('ho fatto click');
-      menu.classList.toggle('open');
-      buttonMenu.classList.toggle('is-active');  
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const request = await fetch('https://api.chucknorris.io/jokes/random')
+      const data = await request.json();
+      console.log(data);
+      const phrase1 = document.getElementById('phrase1');
+      phrase1.textContent = data.value;
+     
     });
 
   </script>
+
 </body>
 </html>
 

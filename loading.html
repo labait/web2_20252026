@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>loading</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+  <div id="loading">
+    <div class="fixed inset-0 flex items-center justify-center bg-white z-50">
+      <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
+    </div>
+    <style>
+      .loader {
+        border-top-color: #3498db;
+        animation: spin 1s infinite linear;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </div>
+  <main class="container mx-auto ">
+    <section id="images"
+      class="border border-gray-300 grid gap-1 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div class="border max-h-40 overflow-hidden"><img src="images/image1.jpg" alt=""></div>
+      <div class="border max-h-40 overflow-hidden"><img src="images/image2.jpg" alt=""></div>
+      <div class="border max-h-40 overflow-hidden"><img src="images/image3.jpg" alt=""></div>
+      <div class="border max-h-40 overflow-hidden"><img src="images/image4.jpg" alt=""></div>
+    </section>
+  </main>
+
+  <script>
+    /* wait for the DOM to load completely */
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("DOM fully loaded and parsed");
+    });
+
+    /* hide loading screen when all resources are loaded */
+    window.addEventListener('load', function () {
+      document.getElementById('loading').classList.add('hidden');
+    });
+
+    /* simulating a delay for demonstration purposes
+    setTimeout(() => {
+       document.getElementById('loading').classList.add('hidden');
+    }, 2000);*/
+  </script>
+</body>
+
+</html>

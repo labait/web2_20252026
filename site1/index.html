@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>site1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="hamburgers.css">
+  <style>
+
+
+    #menu {
+      left: 80%;
+      transition: all 0.3s;
+    }
+
+    #menu.open {
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <button class="hamburger hamburger--spin fixed right-0 scale-150 mr-8 mt-8 cursor-pointer z-20" type="button">
+    <span class="hamburger-box">
+      <span class="hamburger-inner"></span>
+    </span>
+  </button> 
+  <div id="menu" class=" fixed h-screen w-screen bg-purple-400 z-10" ></div>
+
+  </div>
+  <main  class="h-screen mx-auto bg-violet-500 flex items-center justify-center">
+    <h1 class="title text-[8vw] font-bold text-white bg-violet-700 px-4 py-2">
+      Hello world!
+    </h1>
+  </main>
+
+  <script>
+    const button = document.querySelector(".hamburger");
+    const menu = document.querySelector("#menu");
+    
+    button.addEventListener("click", () => {
+      console.log("click");
+      menu.classList.toggle("open");
+      button.classList.toggle("is-active");
+    })
+
+  </script>
+</body>
+</html>
