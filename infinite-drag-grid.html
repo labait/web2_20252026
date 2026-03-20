@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinite Drag Grid</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0e0e0e;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: 'Space Mono', monospace;
+  }
+
+  body.is-dragging { cursor: grabbing; }
+
+  /* ── Fixed background text ── */
+  .bg-text {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 13vw, 200px);
+    color: rgba(255, 255, 255, 0.035);
+    letter-spacing: 0.05em;
+    line-height: 0.92;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .bg-text span { display: block; }
+
+  /* ── Canvas layer ── */
+  #canvas {
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 1;
+    will-change: transform;
+  }
+
+  .block {
+    position: absolute;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.3);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .block:hover {
+    box-shadow: 0 8px 44px rgba(0,0,0,0.55);
+    transform: scale(1.035);
+    z-index: 999 !important;
+  }
+
+  .block img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  .block .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px 16px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .block:hover .overlay { opacity: 1; }
+
+  .overlay span {
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Navbar ── */
+  .navbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 26px;
+    pointer-events: none;
+  }
+  .navbar > * { pointer-events: auto; }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: 0.06em;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 3px;
+    padding: 9px 18px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.09);
+    color: #fff;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.3);
+    transition: background 0.2s;
+  }
+  .btn:hover { background: rgba(255,255,255,0.18); }
+
+  /* ── Hint ── */
+  .hint {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    animation: pulse 3s ease-in-out infinite;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+  .hint.hidden { opacity: 0; }
+  .hint svg { width: 15px; height: 15px; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.75; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-text">
+  <span>THE BETTERING</span>
+  <span>COMPANY™</span>
+</div>
+
+<nav class="navbar">
+  <div class="logo">GALLERY™</div>
+  <button class="btn" id="shuffleBtn">Shuffle</button>
+</nav>
+
+<div class="hint" id="hint">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
+    <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+    <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+  </svg>
+  Drag to explore
+</div>
+
+<div id="canvas"></div>
+
+<script>
+(function() {
+
+  /* ══════════════════════════════
+     CONFIG
+     ══════════════════════════════ */
+  const COUNT   = 20;
+  const COLS    = 5;
+  const ROWS    = 4;
+  const SIZE    = 300;       // square block size
+  const GAP     = 60;        // gap between blocks
+  const CELL    = SIZE + GAP;
+  const RADIUS  = 4;         // subtle border-radius
+
+  const TILE_W  = COLS * CELL;
+  const TILE_H  = ROWS * CELL;
+
+  const COLORS = [
+    '#E84C3D','#F39C12','#F1C40F','#2ECC71',
+    '#3498DB','#9B59B6','#E74C8A','#1ABC9C',
+    '#E67E22','#D35400','#2980B9','#8E44AD',
+    '#C0392B','#27AE60','#16A085','#7D3C98',
+    '#F5B041','#5DADE2','#AF7AC5','#2C3E50'
+  ];
+
+  const LABELS = [
+    'Abstract','Minimalism','Brutalist','Organic',
+    'Geometric','Retro','Modern','Texture',
+    'Vivid','Monochrome','Pastel','Neon',
+    'Gradient','Pattern','Collage','Typography',
+    'Illustration','Photography','Mixed Media','Sculpture'
+  ];
+
+  const IMAGES = Array.from({length: COUNT}, (_, i) =>
+    `https://picsum.photos/seed/g${i}/600/600`
+  );
+
+  // Block defs — perfectly regular grid, no rotation
+  const blocks = [];
+  for (let i = 0; i < COUNT; i++) {
+    blocks.push({
+      x: (i % COLS) * CELL,
+      y: Math.floor(i / COLS) * CELL,
+      color: COLORS[i],
+      image: IMAGES[i],
+      label: LABELS[i]
+    });
+  }
+
+  /* ══════════════════════════════
+     STATE
+     ══════════════════════════════ */
+  let camX = -TILE_W / 2 + window.innerWidth / 2;
+  let camY = -TILE_H / 2 + window.innerHeight / 2;
+
+  // Drift velocity — starts with a gentle diagonal
+  let driftVX = 0.35;
+  let driftVY = 0.2;
+
+  // User drag tracking
+  let isDragging  = false;
+  let lastPX = 0, lastPY = 0;
+  let userVX = 0, userVY = 0;
+  let lastMoveT   = 0;
+
+  const DRIFT_DECAY   = 0.9985;   // very slow decay → long coast
+  const MIN_DRIFT     = 0.25;     // never go below this speed
+  const FALLBACK_VX   = 0.35;
+  const FALLBACK_VY   = 0.2;
+
+  const canvasEl = document.getElementById('canvas');
+  const hint     = document.getElementById('hint');
+
+  /* ══════════════════════════════
+     TILE POOL (3×3 around camera)
+     ══════════════════════════════ */
+  const pool = new Map();
+  const key  = (tx, ty) => `${tx},${ty}`;
+
+  function makeTile(tx, ty) {
+    const els = [];
+    const ox  = tx * TILE_W;
+    const oy  = ty * TILE_H;
+
+    blocks.forEach((b, i) => {
+      const el = document.createElement('div');
+      el.className = 'block';
+      el.style.cssText =
+        `width:${SIZE}px;height:${SIZE}px;` +
+        `left:${ox + b.x}px;top:${oy + b.y}px;` +
+        `background:${b.color};border-radius:${RADIUS}px;z-index:${i}`;
+
+      const img = document.createElement('img');
+      img.src     = b.image;
+      img.alt     = b.label;
+      img.loading = 'lazy';
+      el.appendChild(img);
+
+      const ov = document.createElement('div');
+      ov.className = 'overlay';
+      ov.innerHTML = `<span>${b.label}</span>`;
+      el.appendChild(ov);
+
+      canvasEl.appendChild(el);
+      els.push(el);
+    });
+    return els;
+  }
+
+  function killTile(k) {
+    const els = pool.get(k);
+    if (els) { els.forEach(e => e.remove()); pool.delete(k); }
+  }
+
+  function sync() {
+    const cx  = -camX + window.innerWidth  / 2;
+    const cy  = -camY + window.innerHeight / 2;
+    const ctX = Math.floor(cx / TILE_W);
+    const ctY = Math.floor(cy / TILE_H);
+
+    const need = new Set();
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        need.add(key(ctX + dx, ctY + dy));
+
+    for (const k of pool.keys()) if (!need.has(k)) killTile(k);
+
+    for (const k of need) {
+      if (!pool.has(k)) {
+        const [tx, ty] = k.split(',').map(Number);
+        pool.set(k, makeTile(tx, ty));
+      }
+    }
+  }
+
+  /* ══════════════════════════════
+     RENDER LOOP
+     ══════════════════════════════ */
+  function tick() {
+    if (!isDragging) {
+      camX += driftVX;
+      camY += driftVY;
+
+      // Gentle decay
+      driftVX *= DRIFT_DECAY;
+      driftVY *= DRIFT_DECAY;
+
+      // Enforce minimum speed
+      const spd = Math.hypot(driftVX, driftVY);
+      if (spd > 0 && spd < MIN_DRIFT) {
+        const s = MIN_DRIFT / spd;
+        driftVX *= s;
+        driftVY *= s;
+      } else if (spd === 0) {
+        driftVX = FALLBACK_VX;
+        driftVY = FALLBACK_VY;
+      }
+    }
+
+    sync();
+    canvasEl.style.transform = `translate3d(${camX}px,${camY}px,0)`;
+    requestAnimationFrame(tick);
+  }
+
+  /* ══════════════════════════════
+     POINTER EVENTS
+     ══════════════════════════════ */
+  function down(x, y) {
+    isDragging = true;
+    document.body.classList.add('is-dragging');
+    lastPX = x; lastPY = y;
+    userVX = 0; userVY = 0;
+    lastMoveT = performance.now();
+    if (!hint.classList.contains('hidden')) hint.classList.add('hidden');
+  }
+
+  function move(x, y) {
+    if (!isDragging) return;
+    const dx  = x - lastPX;
+    const dy  = y - lastPY;
+    const now = performance.now();
+    const dt  = Math.max(now - lastMoveT, 1);
+
+    camX += dx;
+    camY += dy;
+
+    // Track velocity normalised to ~16 ms frame
+    const f = 16 / dt;
+    userVX = dx * f * 0.45;
+    userVY = dy * f * 0.45;
+
+    lastPX = x; lastPY = y;
+    lastMoveT = now;
+  }
+
+  function up() {
+    if (!isDragging) return;
+    isDragging = false;
+    document.body.classList.remove('is-dragging');
+
+    // Transfer user velocity → drift, preserving direction & speed
+    const spd = Math.hypot(userVX, userVY);
+    if (spd > MIN_DRIFT) {
+      driftVX = userVX;
+      driftVY = userVY;
+    }
+    // If user barely moved, keep existing drift direction
+  }
+
+  // Mouse
+  document.addEventListener('mousedown',  e => down(e.clientX, e.clientY));
+  document.addEventListener('mousemove',  e => move(e.clientX, e.clientY));
+  document.addEventListener('mouseup',    up);
+  document.addEventListener('mouseleave', up);
+
+  // Touch
+  document.addEventListener('touchstart', e => {
+    down(e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: true});
+  document.addEventListener('touchmove', e => {
+    e.preventDefault();
+    move(e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive: false});
+  document.addEventListener('touchend', up);
+
+  /* ══════════════════════════════
+     SHUFFLE
+     ══════════════════════════════ */
+  document.getElementById('shuffleBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    const sh = [...IMAGES].sort(() => Math.random() - 0.5);
+    blocks.forEach((b, i) => { b.image = sh[i]; });
+    for (const k of [...pool.keys()]) killTile(k);
+    sync();
+  });
+
+  /* ══════════════════════════════
+     INIT
+     ══════════════════════════════ */
+  sync();
+  requestAnimationFrame(tick);
+
+})();
+</script>
+</body>
+</html>
