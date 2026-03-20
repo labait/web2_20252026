@@ -4,173 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Infinite Drag Grid</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Font import -->
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@700&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: #0e0e0e;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    font-family: 'Space Mono', monospace;
-  }
-
-  body.is-dragging { cursor: grabbing; }
-
-  /* ── Fixed background text ── */
-  .bg-text {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-    pointer-events: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(72px, 13vw, 200px);
-    color: rgba(255, 255, 255, 0.035);
-    letter-spacing: 0.05em;
-    line-height: 0.92;
-    text-align: center;
-    white-space: nowrap;
-  }
-  .bg-text span { display: block; }
-
-  /* ── Canvas layer ── */
-  #canvas {
-    position: absolute;
-    top: 0; left: 0;
-    z-index: 1;
-    will-change: transform;
-  }
-
-  .block {
-    position: absolute;
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.3);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-  }
-
-  .block:hover {
-    box-shadow: 0 8px 44px rgba(0,0,0,0.55);
-    transform: scale(1.035);
-    z-index: 999 !important;
-  }
-
-  .block img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-  }
-
-  .block .overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-end;
-    padding: 14px 16px;
-    background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 55%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-  .block:hover .overlay { opacity: 1; }
-
-  .overlay span {
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  /* ── Navbar ── */
-  .navbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 26px;
-    pointer-events: none;
-  }
-  .navbar > * { pointer-events: auto; }
-
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    color: #fff;
-    letter-spacing: 0.06em;
-    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
-  }
-
-  .btn {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 3px;
-    padding: 9px 18px;
-    cursor: pointer;
-    background: rgba(255,255,255,0.09);
-    color: #fff;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 1px 8px rgba(0,0,0,0.3);
-    transition: background 0.2s;
-  }
-  .btn:hover { background: rgba(255,255,255,0.18); }
-
-  /* ── Hint ── */
-  .hint {
-    position: fixed;
-    bottom: 22px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    color: rgba(255,255,255,0.3);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    animation: pulse 3s ease-in-out infinite;
-    pointer-events: none;
-    transition: opacity 0.8s ease;
-  }
-  .hint.hidden { opacity: 0; }
-  .hint svg { width: 15px; height: 15px; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.75; }
-  }
+  body, .font-bebas { font-family: 'Bebas Neue', sans-serif; }
+  .font-mono { font-family: 'Space Mono', monospace; }
 </style>
 </head>
-<body>
+<body class="bg-gray-900 overflow-hidden">
 
-<div class="bg-text">
-  <span>THE BETTERING</span>
-  <span>COMPANY™</span>
+<div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none font-bebas text-[clamp(72px,13vw,200px)] text-white/5 tracking-wider text-center whitespace-nowrap">
+  <span>infinite grid</span>
 </div>
 
-<nav class="navbar">
-  <div class="logo">GALLERY™</div>
-  <button class="btn" id="shuffleBtn">Shuffle</button>
+<nav class="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-between px-6 py-4 pointer-events-none">
+   <button class="font-mono font-bold text-xs tracking-widest uppercase rounded px-4 py-2 cursor-pointer bg-white/10 text-white backdrop-blur pointer-events-auto hover:bg-white/20 shadow-lg transition" id="shuffleBtn">Shuffle</button>
 </nav>
 
-<div class="hint" id="hint">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] text-white/30 text-xs tracking-widest uppercase flex items-center gap-2 animate-pulse pointer-events-none transition-opacity duration-700" id="hint">
+  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
     <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
     <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
@@ -189,7 +43,7 @@
   const COUNT   = 20;
   const COLS    = 5;
   const ROWS    = 4;
-  const SIZE    = 300;       // square block size
+  const SIZE    = 400;       // square block size
   const GAP     = 60;        // gap between blocks
   const CELL    = SIZE + GAP;
   const RADIUS  = 4;         // subtle border-radius
@@ -266,22 +120,33 @@
 
     blocks.forEach((b, i) => {
       const el = document.createElement('div');
-      el.className = 'block';
+      el.className = 'absolute rounded overflow-hidden shadow-lg transition-shadow transition-transform duration-300';
       el.style.cssText =
         `width:${SIZE}px;height:${SIZE}px;` +
         `left:${ox + b.x}px;top:${oy + b.y}px;` +
-        `background:${b.color};border-radius:${RADIUS}px;z-index:${i}`;
+        `background:${b.color};z-index:${i}`;
 
       const img = document.createElement('img');
       img.src     = b.image;
       img.alt     = b.label;
       img.loading = 'lazy';
+      img.className = 'cursor-pointer w-full h-full object-cover block pointer-events-none';
       el.appendChild(img);
 
       const ov = document.createElement('div');
-      ov.className = 'overlay';
-      ov.innerHTML = `<span>${b.label}</span>`;
+      ov.className = 'absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/50 to-transparent opacity-0 pointer-events-none transition-opacity duration-300';
+      ov.innerHTML = `<span class="text-white text-[10px] font-bold tracking-widest uppercase">${b.label}</span>`;
       el.appendChild(ov);
+
+      // Hover effect
+      el.addEventListener('mouseenter', () => {
+        el.classList.add('shadow-2xl', 'scale-[1.035]', 'z-[999]');
+        ov.classList.add('opacity-100');
+      });
+      el.addEventListener('mouseleave', () => {
+        el.classList.remove('shadow-2xl', 'scale-[1.035]', 'z-[999]');
+        ov.classList.remove('opacity-100');
+      });
 
       canvasEl.appendChild(el);
       els.push(el);
