@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+</head>
+<body class="m-0">
+  <main>
+    <div id="timelapse" class="min-h-screen flex items-center justify-center bg-neutral-100 border">
+      <img
+        id="timelapse-frame"
+        src="images/1.png"
+        alt=""
+        width="800"
+        height="600"
+        class="max-h-[85vh] max-w-full w-auto h-auto object-contain shadow-lg"
+      />
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+    (function () {
+      const N = 5; // indici da 0 a N - 1 (10 immagini nella cartella images)
+      const SCROLL_DISTANCE = '+=500%'; // distanza di scroll mentre la sezione è “pin”
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      const frame = document.getElementById('timelapse-frame');
+      let lastIndex = -1;
+
+      function frameSrcForIndex(index) {
+        // file: 1.png … N.png (indice scroll 0 … N-1)
+        return `images/${index + 1}.png`;
+      }
+
+      function indexFromProgress(progress) {
+        const p = Math.min(1, Math.max(0, progress));
+        return Math.min(N - 1, Math.floor(p * N));
+      }
+
+      ScrollTrigger.create({
+        trigger: '#timelapse',
+        start: 'top top',
+        end: SCROLL_DISTANCE,
+        pin: true,
+        scrub: true,
+        onUpdate: (self) => {
+          const idx = indexFromProgress(self.progress);
+          if (idx !== lastIndex) {
+            frame.src = frameSrcForIndex(idx);
+            const dir =
+              lastIndex < 0 ? 'inizio' : lastIndex < idx ? 'avanti' : 'indietro';
+            console.log('indice', idx, '/', N - 1, dir);
+            lastIndex = idx;
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
