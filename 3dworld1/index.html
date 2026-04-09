@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D World</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    backdropBlur: { xs: '2px' },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Solo ciò che Tailwind non può fare via classi */
+        body { overflow: hidden; }
+        canvas { display: block; }
+
+        /* Crosshair pseudo-elements */
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.80);
+            box-shadow: 0 0 3px rgba(0,0,0,0.55);
+        }
+        #crosshair::before {
+            width: 2px; height: 100%;
+            left: 50%; top: 0;
+            transform: translateX(-50%);
+        }
+        #crosshair::after {
+            width: 100%; height: 2px;
+            top: 50%; left: 0;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body class="bg-sky-300">
+
+    <!-- Crosshair -->
+    <div
+        id="crosshair"
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+               w-[18px] h-[18px] pointer-events-none transition-opacity duration-300"
+    ></div>
+
+    <!-- HUD controlli -->
+    <div
+        id="hud"
+        class="fixed bottom-6 right-6 min-w-[210px]
+               bg-black/40 backdrop-blur-md
+               border border-white/[0.18] rounded-2xl
+               px-[18px] py-[14px]
+               text-white font-sans text-[13px] leading-loose
+               select-none pointer-events-none"
+    >
+        <!-- Titolo -->
+        <p class="text-base uppercase tracking-widest opacity-55 mb-1.5">
+            Controlli
+        </p>
+
+        <!-- Riga ↑↓ -->
+        <div class="flex items-center gap-2">
+            <div class="flex gap-[3px]">
+                <span class="key">↑</span>
+                <span class="key">↓</span>
+            </div>
+            <span class="text-base opacity-75">Avanza / Arretra</span>
+        </div>
+
+        <!-- Riga ←→ -->
+        <div class="flex items-center gap-2">
+            <div class="flex gap-[3px]">
+                <span class="key">←</span>
+                <span class="key">→</span>
+            </div>
+            <span class="text-base opacity-75">Ruota</span>
+        </div>
+
+        <!-- Riga SPACE -->
+        <div class="flex items-center">
+            <span class="key px-3 text-base">SPACE</span>
+            <span class="text-base opacity-75">Cambia visuale</span>
+        </div>
+
+        <!-- Separatore + stato camera -->
+        <div
+            id="cam-mode-label"
+            class="flex items-center gap-1.5 mt-2.5 pt-2.5
+                   border-t border-white/[0.15] text-base opacity-65"
+        >
+            <span class="w-2 h-2 rounded-full bg-green-400 shrink-0"></span>
+            <span id="cam-mode-text">Prima persona</span>
+        </div>
+    </div>
+
+    <!-- Tailwind component class per i tasti -->
+    <style>
+        .key {
+            @apply inline-flex items-center justify-center
+                   bg-white/[0.14] border border-white/30
+                   rounded-[5px] px-[7px] text-[13px]
+                   min-w-[26px] h-6;
+        }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

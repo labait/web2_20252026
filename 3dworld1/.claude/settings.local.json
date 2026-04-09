@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open:*)",
+      "Bash(lsof -ti:8080)",
+      "Bash(xargs kill:*)",
+      "Bash(python3 -m http.server 8080 --directory /Users/magnum/Desktop/3dworld1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/)"
+    ]
+  }
+}
